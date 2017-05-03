@@ -19,6 +19,7 @@ import javax.xml.ws.WebServiceException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class LagomCompanyServiceImpl implements LagomCompanyService {
     private static final int PAGE_SIZE = 20;
@@ -58,7 +59,15 @@ public class LagomCompanyServiceImpl implements LagomCompanyService {
     public ServiceCall<NotUsed, PaginatedSequence<CompanyDTO>> getCompanies(Optional<Integer> pageNumber,
                                                                             Optional<Integer> pageSize) {
         return request ->
-                companyMongoRepository.getCompanies(pageNumber.orElse(0), PAGE_SIZE);
+                companyMongoRepository.getCompanies(pageNumber.orElse(0), PAGE_SIZE)
+                        .thenApply(e ->
+                                new PaginatedSequence<>(
+                                        TreePVector.from(e.getValues()
+                                                .stream().map(this::convertCompanyStateToCompanyDTO)
+                                                .collect(Collectors.toList())),
+                                        pageNumber.orElse(0),
+                                        pageSize.orElse(PAGE_SIZE)));
+
     }
 
     @Override
@@ -134,8 +143,8 @@ public class LagomCompanyServiceImpl implements LagomCompanyService {
         return companyDTO;
     }
 
-    private PVector<Contact> convertContactDTOListToContactPVector(List<ContactDTO> contactDTOList){
-//        contactDTOList = Optional.ofNullable(contactDTOList).orElse(new ArrayList<>());
+    private PVector<Contact> convertContactDTOListToContactPVector(List<ContactDTO> contactDTOList) {
+        contactDTOList = Optional.ofNullable(contactDTOList).orElse(new ArrayList<>());
         return TreePVector.from(
                 Lists.transform(contactDTOList, contactDTO ->
                         Contact.builder()
@@ -154,11 +163,13 @@ public class LagomCompanyServiceImpl implements LagomCompanyService {
                 )
         );
     }
+
     public String name;
     public AddressDTO address;
     public List<ContactInfoDTO> contactInfo;
-    private PVector<Location> convertLocationDTOListToLocationPVector(List<LocationDTO> locationDTOList){
-//        locationDTOList = Optional.ofNullable(locationDTOList).orElse(new ArrayList<>());
+
+    private PVector<Location> convertLocationDTOListToLocationPVector(List<LocationDTO> locationDTOList) {
+        locationDTOList = Optional.ofNullable(locationDTOList).orElse(new ArrayList<>());
         return TreePVector.from(
                 Lists.transform(locationDTOList, locationDTO ->
                         Location.builder()
