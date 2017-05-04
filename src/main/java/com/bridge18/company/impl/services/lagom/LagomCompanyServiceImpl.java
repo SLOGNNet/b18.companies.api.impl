@@ -15,7 +15,6 @@ import org.pcollections.PVector;
 import org.pcollections.TreePVector;
 
 import javax.inject.Inject;
-import javax.xml.ws.WebServiceException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -36,17 +35,12 @@ public class LagomCompanyServiceImpl implements LagomCompanyService {
     @Override
     public ServiceCall<CompanyDTO, CompanyDTO> createCompany() {
         return request -> {
-            PVector<Contact> contacts = request.contacts != null ?
-                    convertContactDTOListToContactPVector(request.contacts) : null;
-
-            PVector<Location> locations = request.locations != null ?
-                    convertLocationDTOListToLocationPVector(request.locations) : null;
+            PVector<Contact> contacts = convertContactDTOListToContactPVector(request.contacts);
+            PVector<Location> locations = convertLocationDTOListToLocationPVector(request.locations);
 
             return companyService.createCompany(request.name,
-                    Optional.ofNullable(Optional.ofNullable(request.taxId).orElseThrow(
-                            () -> new LagomException("taxId is mandatory", 400, "taxid == null", "taxId"))),
-                    Optional.ofNullable(Optional.ofNullable(request.mc).orElseThrow(
-                            () -> new WebServiceException("Type field is mandatory"))),
+                    Optional.ofNullable(request.taxId),
+                    Optional.ofNullable(request.mc),
                     Optional.ofNullable(request.companyType),
                     Optional.ofNullable(contacts),
                     Optional.ofNullable(locations))
@@ -73,11 +67,8 @@ public class LagomCompanyServiceImpl implements LagomCompanyService {
     @Override
     public ServiceCall<CompanyDTO, CompanyDTO> updateCompany(String id) {
         return request -> {
-            PVector<Contact> contacts = request.contacts != null ?
-                    convertContactDTOListToContactPVector(request.contacts) : null;
-
-            PVector<Location> locations = request.locations != null ?
-                    convertLocationDTOListToLocationPVector(request.locations) : null;
+            PVector<Contact> contacts = convertContactDTOListToContactPVector(request.contacts);
+            PVector<Location> locations = convertLocationDTOListToLocationPVector(request.locations);
 
             return companyService.updateCompany(
                     id,
@@ -96,7 +87,6 @@ public class LagomCompanyServiceImpl implements LagomCompanyService {
     public ServiceCall<NotUsed, CompanyDTO> getCompany(String id) {
         return request ->
                 companyService.getCompany(id)
-
                         .thenApply(this::convertCompanyStateToCompanyDTO);
     }
 
@@ -108,8 +98,10 @@ public class LagomCompanyServiceImpl implements LagomCompanyService {
     }
 
     private CompanyDTO convertCompanyStateToCompanyDTO(CompanyState companyState) {
-        List<ContactDTO> contactDTOS = companyState.getContacts().isPresent() ?
-                Lists.transform(companyState.getContacts().get(), contact ->
+        List<ContactDTO> contactDTOS = Lists.transform(companyState.getContacts()
+                        .orElseThrow(() ->
+                                new LagomException("CONTACTS_EMPTY", 404, "Contacts could not be empty", "contacts")),
+                contact ->
                         new ContactDTO(contact.getId().orElse(null),
                                 contact.getFirstName().orElse(null),
                                 contact.getMiddleName().orElse(null),
@@ -120,17 +112,19 @@ public class LagomCompanyServiceImpl implements LagomCompanyService {
                                 contact.getPosition().orElse(null),
                                 convertAddressToAddressDTO(contact.getAddress().orElse(Address.builder().build()))
                         )
-                ) : null;
+        );
 
-        List<LocationDTO> locationDTOS = companyState.getLocations().isPresent() ?
-                Lists.transform(companyState.getLocations().get(), location ->
+        List<LocationDTO> locationDTOS = Lists.transform(companyState.getLocations()
+                        .orElseThrow(() ->
+                                new LagomException("LOCATIONS_EMPTY", 404, "Locations could not be empty", "locations")),
+                location ->
                         new LocationDTO(location.getName().orElse(null),
                                 convertAddressToAddressDTO(location.getAddress().orElse(Address.builder().build())),
                                 convertContactInfoPVectorToList(
                                         location.getContactInfo().orElse(TreePVector.empty())
                                 )
                         )
-                ) : null;
+        );
 
         CompanyDTO companyDTO = new CompanyDTO(companyState.getId(),
                 companyState.getName(),
@@ -144,7 +138,9 @@ public class LagomCompanyServiceImpl implements LagomCompanyService {
     }
 
     private PVector<Contact> convertContactDTOListToContactPVector(List<ContactDTO> contactDTOList) {
-        contactDTOList = Optional.ofNullable(contactDTOList).orElse(new ArrayList<>());
+        if (contactDTOList == null) {
+            throw new LagomException("CONTACTS_EMPTY", 400, "Contacts could not be empty", "contacts");
+        }
         return TreePVector.from(
                 Lists.transform(contactDTOList, contactDTO ->
                         Contact.builder()
@@ -164,12 +160,10 @@ public class LagomCompanyServiceImpl implements LagomCompanyService {
         );
     }
 
-    public String name;
-    public AddressDTO address;
-    public List<ContactInfoDTO> contactInfo;
-
     private PVector<Location> convertLocationDTOListToLocationPVector(List<LocationDTO> locationDTOList) {
-        locationDTOList = Optional.ofNullable(locationDTOList).orElse(new ArrayList<>());
+        if (locationDTOList == null) {
+            throw new LagomException("LOCATIONS_EMPTY", 400, "Locations could not be empty", "locations");
+        }
         return TreePVector.from(
                 Lists.transform(locationDTOList, locationDTO ->
                         Location.builder()
