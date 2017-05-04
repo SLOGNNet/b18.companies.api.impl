@@ -65,8 +65,8 @@ public class LagomCompanyServiceImpl implements LagomCompanyService {
                                         TreePVector.from(e.getValues()
                                                 .stream().map(this::convertCompanyStateToCompanyDTO)
                                                 .collect(Collectors.toList())),
-                                        pageNumber.orElse(0),
-                                        pageSize.orElse(PAGE_SIZE)));
+                                        e.getPageNumber(),
+                                        e.getPageSize()));
 
     }
 

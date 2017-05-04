@@ -1,0 +1,14 @@
+#!/bin/sh
+
+JVM_OPTS="-Xmx128m -Xms128m"
+
+# This should be changed if you use Play sessions
+PLAY_SECRET=none
+
+CONFIG="-Dhttp.address=0.0.0.0 -Dhttp.port=8080 -Dplay.crypto.secret=$PLAY_SECRET -Dconfig.file=config/application.${POD_NAMESPACE}.conf"
+
+DIR=$(dirname $0)
+
+echo "Up to run: java -cp "$DIR/../lib/*" $JAVA_OPTS $CONFIG play.core.server.ProdServerStart"
+
+java -cp "$DIR/../lib/*" $JAVA_OPTS $CONFIG play.core.server.ProdServerStart
