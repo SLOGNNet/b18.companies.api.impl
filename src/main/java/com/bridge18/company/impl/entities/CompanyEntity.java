@@ -26,26 +26,25 @@ public class CompanyEntity extends PersistentEntity<CompanyCommand, CompanyEvent
                                 .companyType(cmd.getCompanyType())
                                 .contacts(cmd.getContacts())
                                 .locations(cmd.getLocations())
-                                .build(),
-
-                        CompanyUpdated.builder()
-                                .id(entityId())
-                                .name(cmd.getName())
-                                .mc(cmd.getMc())
-                                .taxId(cmd.getTaxId())
-                                .companyType(cmd.getCompanyType())
-                                .contacts(cmd.getContacts())
-                                .locations(cmd.getLocations())
                                 .build()
                 )
         );
 
         b.setEventHandlerChangingBehavior(
                 CompanyCreated.class,
-                companyCreated -> created(state())
+                evt -> created(
+                        CompanyState
+                                .builder()
+                                .from(state())
+                                .id(evt.getId())
+                                .name(evt.getName())
+                                .mc(evt.getMc())
+                                .taxId(evt.getTaxId())
+                                .companyType(evt.getCompanyType())
+                                .contacts(evt.getContacts())
+                                .locations(evt.getLocations())
+                                .build())
         );
-
-
         return b.build();
     }
 
@@ -57,7 +56,7 @@ public class CompanyEntity extends PersistentEntity<CompanyCommand, CompanyEvent
                 (cmd, ctx) ->
                         ctx.thenPersist(
                                 CompanyUpdated.builder()
-                                        .id(cmd.getId())
+                                        .id(entityId())
                                         .name(cmd.getName())
                                         .mc(cmd.getMc())
                                         .taxId(cmd.getTaxId())

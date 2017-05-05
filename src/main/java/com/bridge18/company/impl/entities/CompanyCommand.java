@@ -38,8 +38,6 @@ public interface CompanyCommand extends Jsonable {
     @JsonDeserialize
     interface AbstractUpdateCompany extends CompanyCommand, CompressedJsonable, PersistentEntity.ReplyType<CompanyState> {
         @Value.Parameter
-        String getId();
-        @Value.Parameter
         String getName();
         @Value.Parameter
         Optional<String> getMc();

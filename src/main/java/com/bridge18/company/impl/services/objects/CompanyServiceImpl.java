@@ -57,7 +57,6 @@ public class CompanyServiceImpl implements CompanyService {
         PersistentEntityRef<CompanyCommand> ref = persistentEntityRegistry.refFor(CompanyEntity.class, id);
 
         UpdateCompany updateCompany = UpdateCompany.builder()
-                .id(id)
                 .name(name)
                 .mc(mc)
                 .taxId(taxId)
