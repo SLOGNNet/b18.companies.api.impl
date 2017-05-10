@@ -38,13 +38,13 @@ public class CompanyEntityTest {
                 new PersistentEntityTestDriver(system, new CompanyEntity(), "test-company-1");
 
         UpdateCompany updateCompanyCmd = UpdateCompany.builder().name("John").build();
-        PersistentEntityTestDriver.Outcome<CompanyEvent, CompanyState> updateOutcome = persistentEntityTestDriver.run
-                (updateCompanyCmd);
+        PersistentEntityTestDriver.Outcome<CompanyEvent, CompanyState> updateOutcome = persistentEntityTestDriver
+                .run(updateCompanyCmd);
         assertTrue(updateOutcome.issues().get(0) instanceof PersistentEntityTestDriver.UnhandledCommand);
 
         DeleteCompany deleteCompanyCmd = DeleteCompany.builder().build();
-        PersistentEntityTestDriver.Outcome<CompanyEvent, CompanyState> deleteOutcome = persistentEntityTestDriver.run
-                (deleteCompanyCmd);
+        PersistentEntityTestDriver.Outcome<CompanyEvent, CompanyState> deleteOutcome = persistentEntityTestDriver
+                .run(deleteCompanyCmd);
         assertTrue(deleteOutcome.issues().get(0) instanceof PersistentEntityTestDriver.UnhandledCommand);
 
         GetCompanyInformation getCompanyCmdInf = GetCompanyInformation.builder().build();

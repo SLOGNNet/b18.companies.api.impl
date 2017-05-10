@@ -62,9 +62,9 @@ public class LagomCompanyServiceTest {
                 new ContactDTO("2", "John-2", "John-2", "John-2", contactInfos, "2", addressDTO)
         );
 
-        CompanyDTO getCompanyInfo = new CompanyDTO(null, "John-1", "mc-1", "1111", CompanyType.CARRIER, contactDTOs,
+        CompanyDTO inputCompany = new CompanyDTO(null, "John-1", "mc-1", "1111", CompanyType.CARRIER, contactDTOs,
                 locationDTOs);
-        CompanyDTO createCompanyDTO = testService.createCompany().invoke(getCompanyInfo).toCompletableFuture().get(10,
+        CompanyDTO createCompanyDTO = testService.createCompany().invoke(inputCompany).toCompletableFuture().get(10,
                 SECONDS);
 
         assertNotNull(createCompanyDTO.id);
@@ -75,9 +75,9 @@ public class LagomCompanyServiceTest {
         assertEquals(contactDTOs, createCompanyDTO.contacts);
         assertEquals(locationDTOs, createCompanyDTO.locations);
 
-        getCompanyInfo = new CompanyDTO(null, "John-2", "mc-2", "2222", CompanyType.CARRIER, contactDTOs,
+        inputCompany = new CompanyDTO(null, "John-2", "mc-2", "2222", CompanyType.CARRIER, contactDTOs,
                 locationDTOs);
-        CompanyDTO updateCompanyDTO = testService.updateCompany(createCompanyDTO.id).invoke(getCompanyInfo)
+        CompanyDTO updateCompanyDTO = testService.updateCompany(createCompanyDTO.id).invoke(inputCompany)
                 .toCompletableFuture().get(10, SECONDS);
 
         assertNotNull(updateCompanyDTO.id);
@@ -89,17 +89,23 @@ public class LagomCompanyServiceTest {
         assertEquals(locationDTOs, updateCompanyDTO.locations);
 
 
-        getCompanyInfo = testService.getCompany(createCompanyDTO.id).invoke().toCompletableFuture().get(10, SECONDS);
-        assertNotNull(getCompanyInfo.id);
-        assertEquals("John-2", getCompanyInfo.name);
-        assertEquals("mc-2", getCompanyInfo.mc);
-        assertEquals("2222", getCompanyInfo.taxId);
-        assertEquals(CompanyType.CARRIER, getCompanyInfo.companyType);
-        assertEquals(contactDTOs, getCompanyInfo.contacts);
-        assertEquals(locationDTOs, getCompanyInfo.locations);
+        inputCompany = testService.getCompany(createCompanyDTO.id).invoke().toCompletableFuture().get(10, SECONDS);
+        assertNotNull(inputCompany.id);
+        assertEquals("John-2", inputCompany.name);
+        assertEquals("mc-2", inputCompany.mc);
+        assertEquals("2222", inputCompany.taxId);
+        assertEquals(CompanyType.CARRIER, inputCompany.companyType);
+        assertEquals(contactDTOs, inputCompany.contacts);
+        assertEquals(locationDTOs, inputCompany.locations);
 
-        testService.deleteCompany(getCompanyInfo.id).invoke().toCompletableFuture().get(10, SECONDS);
+        testService.deleteCompany(inputCompany.id).invoke().toCompletableFuture().get(10, SECONDS);
+    }
 
 
+    @Test(expected = Exception.class)
+    public void testContacts() throws InterruptedException, ExecutionException, TimeoutException {
+        CompanyDTO inputCompany = new CompanyDTO(null, "John-1", "mc-1", "1111", CompanyType.CARRIER, null,
+                null);
+        testService.createCompany().invoke(inputCompany).toCompletableFuture().get(10, SECONDS);
     }
 }
