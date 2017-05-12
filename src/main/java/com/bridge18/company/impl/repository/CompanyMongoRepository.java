@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-import static com.bridge18.company.impl.core.CompletionStageUtils.doAll;
+import static com.bridge18.core.CompletionStageUtils.doAll;
 
 @Singleton
 public class CompanyMongoRepository {
